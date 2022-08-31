@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 // const bcrypt = require("bcrypt");     -->bcrypt
 // const saltRounds = 10;               -->bcrypt
 
-const session = require("express-session");
+const session = require("express-session");        //session and cookiew automatically do salting and hasing of password
 const passport = require("passport");           // No need to declare as passport local mongoose will use it 
 const passportLocalMongoose =require("passport-local-mongoose");
 const e = require("express");
@@ -63,7 +63,15 @@ app.get("/secrets",function(req,res){
     }else{
         res.redirect("/login");
     }
-})
+});
+app.get("/logout", function(req,res){
+    req.logout(function(err) {
+        if (err) { 
+            console.log(err);
+        }
+        res.redirect('/');
+      });
+});
 
 
 //for bcrypting and salting ===>>
@@ -124,6 +132,21 @@ app.post("/register",function(req,res){
 });
 
 app.post("/login",function(req,res){
+
+    const user = new User({
+        username : req.body.username,
+        password: req.body.password
+    });
+
+    req.login(user,function(err){
+        if(err){
+            console.log(err);
+        }else{
+            passport.authenticate("local")(req,res, function(){
+                res.redirect("/secrets");
+            });
+        }
+    })
 
 });
 
